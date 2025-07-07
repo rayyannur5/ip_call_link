@@ -14,39 +14,91 @@ class HomeView extends GetView<HomeController> {
         title: Image.asset(ImageConstant.imgLogo),
         backgroundColor: Colors.white,
         actions: [
-          Text(
-            'Link',
-            style: TextStyle(
-              color: Colors.blue,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Get.toNamed('setting'),
-            icon: Icon(Icons.settings),
-          ),
+          Text('Link', style: TextStyle(color: Colors.blue, fontSize: 24, fontWeight: FontWeight.bold)),
+          IconButton(onPressed: () => Get.toNamed('setting'), icon: Icon(Icons.settings)),
         ],
       ),
       body: Container(
         height: Get.height,
         width: Get.width,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(ImageConstant.imgBg1),
-            fit: BoxFit.cover,
-          ),
-        ),
+        decoration: BoxDecoration(image: DecorationImage(image: AssetImage(ImageConstant.imgBg1), fit: BoxFit.cover)),
         child: Column(
           children: [
+            Padding(
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+              child: InkWell(
+                onTap: () {
+                  // showModalBottomSheet(context: context, builder: (context) => Container(
+                  //           width: Get.width,
+                  //       child: Column(
+                  //         children: [
+                  //           Text('Tes')
+                  //         ],
+                  //       ),
+                  //     ),);
+
+                  Get.bottomSheet(Container(
+                      width: Get.width, 
+                      padding: EdgeInsets.all(15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: Get.width,
+                          padding: EdgeInsets.symmetric(vertical: 30),
+                          height: 10,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Get.theme.secondaryHeaderColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text('Scan Devices', style: Get.textTheme.headlineSmall),
+                        Text('Klik tombol scan untuk mencari devices yang sedang aktif.', style: Get.textTheme.labelSmall),
+                        SizedBox(
+                          height: 400,
+                          child: ListView(
+                            children: [
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                              ListTile(title: Text('Tes'), subtitle: Text('acfgergerfgerf')),
+                            ],
+                          ),
+                        )
+                      ])), backgroundColor: Colors.white);
+                },
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.circular(15)),
+                  child: Row(
+                    children: [
+                      Text('Device XXX', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Spacer(),
+                      Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(color: Colors.grey.withAlpha(150), borderRadius: BorderRadius.circular(5)),
+                        child: Text('Connected'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: Container(
                 margin: EdgeInsets.all(20),
                 padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(150),
-                  borderRadius: BorderRadius.all(Radius.circular(15)),
-                ),
+                decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.all(Radius.circular(15))),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -66,19 +118,13 @@ class HomeView extends GetView<HomeController> {
                     SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        FilledButton(onPressed: () {}, child: Text('Test Buzzer')),
-                        FilledButton(onPressed: () {}, child: Text('Test LED'))
-                      ],
-                    )
+                      children: [FilledButton(onPressed: () {}, child: Text('Test Buzzer')), FilledButton(onPressed: () {}, child: Text('Test LED'))],
+                    ),
                   ],
                 ),
               ),
             ),
-            SizedBox(
-              width: Get.width - 40,
-              child: FilledButton(onPressed: () {}, child: Text('Save')),
-            ),
+            SizedBox(width: Get.width - 40, child: FilledButton(onPressed: () {}, child: Text('Save'))),
 
             SizedBox(height: 20),
           ],
@@ -98,9 +144,7 @@ class HomeView extends GetView<HomeController> {
               child: Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withAlpha(20)
-                ),
+                decoration: BoxDecoration(color: Colors.grey.withAlpha(20)),
                 child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
@@ -109,24 +153,18 @@ class HomeView extends GetView<HomeController> {
               child: Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(20)
-                ),
+                decoration: BoxDecoration(color: Colors.grey.withAlpha(20)),
                 child: Text(value),
               ),
             ),
             Container(
               height: 25,
-              decoration: BoxDecoration(
-                  color: Colors.grey.withAlpha(20)
-              ),
-              child: IconButton(icon: Icon(Icons.edit, size: 18),  onPressed: (){}),
-            )
-
+              decoration: BoxDecoration(color: Colors.grey.withAlpha(20)),
+              child: IconButton(icon: Icon(Icons.edit, size: 18), onPressed: () {}),
+            ),
           ],
         ),
       ),
     );
   }
-
 }
