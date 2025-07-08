@@ -51,99 +51,70 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.all(20),
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.all(Radius.circular(15))),
-                child: Obx(
-                  () {
-                    if (controller.isConnected.value) {
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('010101 (2W Devices)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                          SizedBox(height: 10),
-                          Obx(() => Column(
-                            children: controller.deviceData.entries.map((entry) {
-                              // `entry.key` adalah "IP", "SSID", dll.
-                              // `entry.value` adalah "192.168.0.145", "IPCallServer", dll.
-                              const keyDisabled = ['IP', 'Mac Addr', 'WiFi Strength', 'Volume', 'Mic Volume'];
-                              return _itemCard(entry.key, entry.value, keyDisabled.contains(entry.key) ? null : () {
-                                // Aksi saat tombol edit ditekan
-                                _showEditBottomSheet(entry.key, entry.value);
-                              });
-                            }).toList(),
-                          )),
-
-                          // _itemCard('ID', '1234567890', null),
-                          // _itemCard('IP', '192.168.0.145', () {
-                          //   Get.bottomSheet(
-                          //     backgroundColor: Colors.white,
-                          //     Container(
-                          //       width: Get.width,
-                          //       padding: EdgeInsets.all(15),
-                          //       child: Column(
-                          //         mainAxisSize: MainAxisSize.min,
-                          //         crossAxisAlignment: CrossAxisAlignment.start,
-                          //         children: [
-                          //           Center(
-                          //             child: Container(
-                          //               width: 100,
-                          //               height: 10,
-                          //               margin: EdgeInsets.all(10),
-                          //               decoration: BoxDecoration(color: Get.theme.hoverColor, borderRadius: BorderRadius.circular(10)),
-                          //             ),
-                          //           ),
-                          //           SizedBox(height: 10),
-                          //           Text('IP', style: Get.textTheme.headlineSmall),
-                          //           SizedBox(height: 15),
-                          //           TextField(
-                          //             controller: TextEditingController(text: '192.168.0.145'),
-                          //             decoration: InputDecoration(border: OutlineInputBorder(), labelText: 'Ketik disini'),
-                          //           ),
-                          //           SizedBox(height: 15),
-                          //           SizedBox( width: Get.width, child: ElevatedButton.icon(onPressed: (){}, style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), icon: Icon(Icons.save), label: Text('Save'))),
-                          //           SizedBox(height: 15),
-                          //         ],
-                          //       ),
-                          //     )
-                          //   );
-                          // }),
-                          SizedBox(height: 10),
-                          Text('Controls', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              FilledButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                                child: Text('Test Buzzer'),
+            ),Container(
+                  margin: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.all(Radius.circular(15))),
+                  child: Obx(
+                    () {
+                      if (controller.isConnected.value) {
+              
+                        return Obx(
+                          () {
+                            return SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('010101 (2W Devices)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  ListView(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    children: controller.deviceData.entries.map((entry) {
+                                      // `entry.key` adalah "IP", "SSID", dll.
+                                      // `entry.value` adalah "192.168.0.145", "IPCallServer", dll.
+                                      const keyDisabled = ['IP', 'Mac Addr', 'WiFi Strength', 'Volume', 'Mic Volume'];
+                                      return _itemCard(entry.key, entry.value, keyDisabled.contains(entry.key) ? null : () {
+                                        // Aksi saat tombol edit ditekan
+                                        _showEditBottomSheet(entry.key, entry.value);
+                                      });
+                                    }).toList(),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text('Controls', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      FilledButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                                        child: Text('Test Buzzer'),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                                        child: Text('Test LED'),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                                        child: Text('Reboot'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              FilledButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                                child: Text('Test LED'),
-                              ),
-                              FilledButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                                child: Text('Reboot'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    } else {
-                      return Center(child: Text('No Connection', style: Get.textTheme.headlineMedium));
+                            );
+                          }
+                        );
+                      } else {
+                        return Center(child: Text('No Connection', style: Get.textTheme.headlineMedium));
+                      }
                     }
-                  }
+                  ),
                 ),
-              ),
-            ),
+
+
             SizedBox(
               width: Get.width - 40,
               child: Obx(
