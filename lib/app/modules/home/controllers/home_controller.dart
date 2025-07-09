@@ -13,11 +13,11 @@ class HomeController extends GetxController {
   final SettingService settingService = Get.find<SettingService>();
 
   /// real
-  // final RxList<ScanResult> scanResults = <ScanResult>[].obs;
+  final RxList<ScanResult> scanResults = <ScanResult>[].obs;
   final RxMap<String, String> deviceData = <String, String>{}.obs;
 
   /// dummy
-  final RxList<Map<String, dynamic>> scanResults = <Map<String, dynamic>>[].obs;
+  // final RxList<Map<String, dynamic>> scanResults = <Map<String, dynamic>>[].obs;
 
   final isScanning = false.obs;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
@@ -32,7 +32,7 @@ class HomeController extends GetxController {
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen(
       (results) {
         // Setiap kali ada hasil baru, update list kita
-        // scanResults.value = results;
+        scanResults.value = results;
       },
       onError: (e) {
         print("Error mendengarkan hasil scan: $e");
@@ -71,18 +71,18 @@ class HomeController extends GetxController {
       await FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
 
       /// dummy
-      // Jeda 2 detik untuk simulasi proses scan
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Buat data dummy dalam bentuk Map
-      final dummyData = [
-        {'name': 'JBL Speaker', 'id': '0A:1B:2C:3D:4E:5F', 'rssi': -50},
-        {'name': 'Mi Band 6', 'id': 'FF:EE:DD:CC:BB:AA', 'rssi': -65},
-        {'name': 'NurseCall 2W', 'id': '11:22:33:44:55:66', 'rssi': -80},
-      ];
-
-      // Masukkan data dummy ke list reaktif
-      scanResults.value = dummyData;
+      // // Jeda 2 detik untuk simulasi proses scan
+      // await Future.delayed(const Duration(seconds: 2));
+      //
+      // // Buat data dummy dalam bentuk Map
+      // final dummyData = [
+      //   {'name': 'JBL Speaker', 'id': '0A:1B:2C:3D:4E:5F', 'rssi': -50},
+      //   {'name': 'Mi Band 6', 'id': 'FF:EE:DD:CC:BB:AA', 'rssi': -65},
+      //   {'name': 'NurseCall 2W', 'id': '11:22:33:44:55:66', 'rssi': -80},
+      // ];
+      //
+      // // Masukkan data dummy ke list reaktif
+      // scanResults.value = dummyData;
 
     } catch (e) {
       Get.snackbar("Error", "Gagal memulai scan Bluetooth: $e");
@@ -183,22 +183,22 @@ class HomeController extends GetxController {
                 itemBuilder: (context, index) {
                   final device = scanResults[index];
                   return ListTile(
-                    title: Text(device['name']),
-                    subtitle: Text(device['id']),
-                    trailing: Text("${device['rssi']} dBm"),
+                    title: Text(device.device.advName),
+                    subtitle: Text(device.device.remoteId.str),
+                    trailing: Text("${device.rssi} dBm"),
                     onTap: () {
                       // 1. Langsung tutup BottomSheet terlebih dahulu
                       Get.back();
                       Future.delayed(const Duration(milliseconds: 300), () {
-                        if (device['device'] != null) {
-                          connectToDevice(device['device']!);
+                        if (device.device != null) {
+                          connectToDevice(device.device);
                         } else {
 
                           final dummyDeviceDetails = {
                             "ID": "1234567890",
                             "IP": "192.168.0.145",
                             "IP Current": "192.168.0.145",
-                            "Mac Addr": device['id'].toString(), // Ambil dari data scan
+                            "Mac Addr": device.device.advName.toString(), // Ambil dari data scan
                             "SSID": "IPCallServer",
                             "Password": "ipcall123",
                             "WiFi Strength": "80%",
