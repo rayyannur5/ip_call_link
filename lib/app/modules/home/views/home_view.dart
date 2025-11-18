@@ -22,24 +22,13 @@ class HomeView extends GetView<HomeController> {
           IconButton(onPressed: () => Get.toNamed(Routes.SETTING), icon: Icon(Icons.settings)),
         ],
       ),
-      floatingActionButton: SizedBox(
-        width: Get.width - 40,
-        child: Obx(() {
-          return ElevatedButton.icon(
-            onPressed: controller.isConnected.value ? () {} : null,
-            icon: Icon(Icons.save),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
-            label: Text('Save'),
-          );
-        }),
-      ),
       body: Container(
         height: Get.height,
         decoration: BoxDecoration(image: DecorationImage(image: AssetImage(ImageConstant.imgBg1), fit: BoxFit.cover)),
-        child: SingleChildScrollView(
-          child: Column(
+        child: RefreshIndicator(
+          onRefresh: () async => controller.sendSimpleMessage('get'),
+          child: ListView(
             children: [
-              SizedBox(height: 80),
               Padding(
                 padding: EdgeInsets.only(top: 20, left: 20, right: 20),
                 child: InkWell(
@@ -47,18 +36,48 @@ class HomeView extends GetView<HomeController> {
                   borderRadius: BorderRadius.circular(15),
                   child: Container(
                     padding: EdgeInsets.all(15),
-                    decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.circular(15)),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(150),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                     child: Row(
                       children: [
                         Obx(() {
-                          return Text(controller.isConnected.value ? 'Device' : 'No Connection', style: TextStyle(fontWeight: FontWeight.bold));
+                          if (controller.isConnected.value) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(controller.connectedDevice.value!.advName, style: Get.textTheme.labelLarge),
+                                Text(controller.connectedDevice.value!.remoteId.str, style: Get.textTheme.labelSmall),
+                              ],
+                            );
+                          } else {
+                            return Text('Disconnected', style: TextStyle(fontWeight: FontWeight.bold));
+                          }
                         }),
                         Spacer(),
-                        Container(
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(color: Colors.grey.withAlpha(150), borderRadius: BorderRadius.circular(5)),
-                          child: Obx(() => Text(controller.isConnected.value ? 'Connected' : 'Disconnected')),
-                        ),
+                        Obx(() {
+                          if (controller.isConnected.value) {
+                            return Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withAlpha(20),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text('Connected', style: TextStyle(color: Colors.green)),
+                            );
+                          } else {
+                            return Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withAlpha(150),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text('Disconnected'),
+                            );
+                          }
+                        }),
                       ],
                     ),
                   ),
@@ -67,30 +86,41 @@ class HomeView extends GetView<HomeController> {
               Container(
                 margin: EdgeInsets.all(20),
                 padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(color: Colors.white.withAlpha(150), borderRadius: BorderRadius.all(Radius.circular(15))),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(150),
+                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                ),
                 child: Obx(() {
+                  final sortedEntries =
+                      controller.deviceData.entries.toList()
+                        ..sort((a, b) => int.parse(a.key).compareTo(int.parse(b.key)));
                   if (controller.isConnected.value) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('010101 (2W Devices)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        Text(controller.deviceTitle, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                         Column(
-                          children: controller.deviceData.entries.map((entry) {
-                            // `entry.key` adalah "IP", "SSID", dll.
-                            // `entry.value` adalah "192.168.0.145", "IPCallServer", dll.
-                            const keyDisabled = ['IP', 'Mac Addr', 'WiFi Strength', 'Volume', 'Mic Volume'];
-                            return _itemCard(
-                              entry.key,
-                              entry.value,
-                              keyDisabled.contains(entry.key)
-                                  ? null
-                                  : () {
-                                // Aksi saat tombol edit ditekan
-                                _showEditBottomSheet(entry.key, entry.value);
-                              },
-                            );
-                          }).toList(),
+                          mainAxisSize: MainAxisSize.min,
+                          children:
+                              sortedEntries.map((entry) {
+                                final Map<String, dynamic> itemData = entry.value;
+
+                                final String label = itemData['k'] ?? 'N/A';
+                                final String value = itemData['v'] ?? '-';
+                                final bool isWriteable = itemData['w'] ?? false;
+
+                                return _itemCard(
+                                  label,
+                                  value,
+                                  isWriteable
+                                      ? () {
+                                        // Aksi saat tombol edit ditekan
+                                        _showEditBottomSheet(label, value);
+                                      }
+                                      : null,
+                                );
+                              }).toList(),
                         ),
                         SizedBox(height: 10),
                         Text('Controls', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
@@ -99,22 +129,33 @@ class HomeView extends GetView<HomeController> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             FilledButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                              onPressed: () => controller.sendSimpleMessage('buzzer'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
                               child: Text('Test Buzzer'),
                             ),
                             FilledButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                              onPressed: () => controller.sendSimpleMessage('led'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                              ),
                               child: Text('Test LED'),
                             ),
                             FilledButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                              onPressed: () => controller.sendSimpleMessage('reboot'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
                               child: Text('Reboot'),
                             ),
                           ],
                         ),
+                        SizedBox(height: 10),
+
                       ],
                     );
                   } else {
@@ -122,7 +163,20 @@ class HomeView extends GetView<HomeController> {
                   }
                 }),
               ),
-              SizedBox(height: 40),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                width: Get.width,
+                child: Obx( () {
+                    return ElevatedButton.icon(
+                      onPressed: controller.isConnected.value ? controller.save : null,
+                      icon: Icon(Icons.save),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                      label: Text('Save'),
+                    );
+                  }
+                ),
+              ),
+              SizedBox(height: 20),
             ],
           ),
         ),
@@ -172,30 +226,95 @@ class HomeView extends GetView<HomeController> {
       Container(
         width: Get.width,
         padding: EdgeInsets.all(15),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ... (kode untuk handle & title bottom sheet) ...
-            Text(key, style: Get.textTheme.headlineSmall),
-            SizedBox(height: 15),
-            TextField(controller: textController, decoration: InputDecoration(border: OutlineInputBorder(), labelText: 'Ketik nilai baru')),
-            SizedBox(height: 15),
-            SizedBox(
-              width: Get.width,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Panggil method update di controller
-                  controller.updateDeviceValue(key, textController.text);
-                  Get.back(); // Tutup bottom sheet
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
-                icon: Icon(Icons.save),
-                label: Text('Save'),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Text(key, style: Get.textTheme.headlineSmall),
+              key == 'SSID'
+                  ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Obx(() {
+                        final List<dynamic> wifiList = controller.listWiFiDevices['wifi'] as List? ?? [];
+                        return Column(
+                          children:
+                              wifiList.map((item) {
+                                final String ssid = item.keys.first;
+                                final String strength = item.values.first;
+
+                                // 4. Buat ListTile dengan data yang benar.
+                                return ListTile(
+                                  leading: const Icon(Icons.wifi),
+                                  title: Text(ssid),
+                                  trailing: Text("$strength %"), // Strength sudah dalam format "80%"
+                                  onTap: () {
+                                    controller.updateDeviceValue("SSID", ssid);
+                                    Get.back();
+                                  },
+                                );
+                              }).toList(),
+                        );
+                      }),
+                      SizedBox(height: 10),
+                      SizedBox(
+                        width: Get.width,
+                        child: Obx(() {
+                            return ElevatedButton.icon(
+                              onPressed: controller.isScanning.value ? null : () {
+                                controller.isScanning.value = true;
+                                controller.sendSimpleMessage('scan-wifi');
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                              icon: controller.isScanning.value ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)) : Icon(Icons.search),
+                              label: Text(controller.isScanning.value ? 'Scanning...' : 'Scan'),
+                            );
+                          }
+                        ),
+                      ),
+                      Divider()
+                    ],
+                  )
+                  : SizedBox(),
+              SizedBox(height: 15),
+              key == 'Device Type' ?
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: controller.deviceTypes.map((item) => ListTile(title: Text(item['label']!), onTap: () {
+                    controller.updateDeviceValue("Device Type", item['value'] ?? "");
+                    Get.back();
+                  },)).toList(),
+                )
+                  : SizedBox(),
+              key == 'Audio' || key == 'Device Type' ?
+                  Row(
+                    children: [],
+                  )
+              :
+              TextField(
+                controller: textController,
+                keyboardType: key == 'ID' || key == 'IP' ? TextInputType.number : TextInputType.text,
+                decoration: InputDecoration(border: OutlineInputBorder(), labelText: 'Ketik nilai baru', prefix: key == 'IP' ? Text('192.168.0.') : null),
               ),
-            ),
-            SizedBox(height: 15),
-          ],
+              SizedBox(height: 15),
+              SizedBox(
+                width: Get.width,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // Panggil method update di controller
+                    controller.updateDeviceValue(key, textController.text);
+                    Get.back(); // Tutup bottom sheet
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                  icon: Icon(Icons.save),
+                  label: Text('Save'),
+                ),
+              ),
+              SizedBox(height: 15),
+            ],
+          ),
         ),
       ),
     );
